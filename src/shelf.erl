@@ -12,14 +12,14 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1]).
+-import(utils, [nop/1, send/2, say/2]).
 
 name() -> shelf.
-client() -> nop(name()).
+shelf() -> nop(name()).
 
-main() -> Shelf_PID = spawn(fun() -> client() end),
-  global:register_name(name(), Shelf_PID),
+main() -> Shelf_PID = spawn(fun() -> shelf() end),
+  global:register_name(name(), Shelf_PID).
   % block current thread in order not to shutdown virtual machine
-  receive
-    _ -> exit(normal)
-  end.
+  %receive
+   % _ -> exit(normal)
+  %end.

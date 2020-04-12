@@ -12,12 +12,12 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1]).
+-import(utils, [nop/1, send/2, say/2]).
 
 name() -> issuing_point.
-client() -> nop(name()).
+issuing_point() -> nop(name()).
 
-main() -> Issuing_point_PID = spawn(fun() -> client() end),
+main() -> Issuing_point_PID = spawn(fun() -> issuing_point() end),
   global:register_name(name(), Issuing_point_PID),
   % block current thread in order not to shutdown virtual machine
   receive

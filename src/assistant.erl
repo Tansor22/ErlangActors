@@ -12,12 +12,12 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1]).
+-import(utils, [nop/1, send/2, say/2]).
 
 name() -> assistant.
-client() -> nop(name()).
+assistant() -> nop(name()).
 
-main() -> Assistant_PID = spawn(fun() -> client() end),
+main() -> Assistant_PID = spawn(fun() -> assistant() end),
   global:register_name(name(), Assistant_PID),
   % block current thread in order not to shutdown virtual machine
   receive

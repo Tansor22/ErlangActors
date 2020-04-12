@@ -12,14 +12,23 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1]).
+-import(utils, [nop/1, send/2, say/2]).
 
 name() -> cashier.
-client() -> nop(name()).
 
-main() -> Cashier_PID = spawn(fun() -> client() end),
-  global:register_name(name(), Cashier_PID),
-  % block current thread in order not to shutdown virtual machine
-  receive
-    _ -> exit(normal)
-  end.
+cashier() -> receive
+               DesiredBook -> send(assistant, DesiredBook),
+                 receive
+                   true -> say("The ~w has been sold!", [DesiredBook])
+                 end
+             end,
+  cashier().
+
+
+main() -> Cashier_PID = spawn(fun() -> cashier() end),
+  global:register_name(name(), Cashier_PID).
+% TODO not needed in console launch mode
+% block current thread in order not to shutdown virtual machine
+%receive
+%  _ -> exit(normal)
+%end.
