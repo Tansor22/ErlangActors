@@ -1,0 +1,25 @@
+// local
+demos:ping(
+    1, spawn(fun() -> demos:pong() end)
+).
+
+// distributed
+
+spawn( fun() -> demos:ping(
+    1, spawn('node3@127.0.1.0', demos, pong,[])
+) end).
+
+
+toCompile:
+
+c(client).
+c(utils).
+
+запуск виртуальной машины с именем ноды
+    - erl -name node1@127.0.1.0
+получения пида по расу
+    - Pid=global:whereis_name(server).
+
+пинг с другой ноды (чтобы узнать его имя)
+    - net_adm:ping(<node_name>)
+
