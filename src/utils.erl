@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Sergei
-%%% @copyright (C) 2020, <COMPANY>
+%%% @copyright (C) 2020, <SIB IT>
 %%% @doc
 %%%
 %%% @end
@@ -10,7 +10,7 @@
 -author("Sergei").
 
 %% API
--export([nop/0, nop/1, nameOf/1, send/2, say/2, pingNodes/2, nodes/0, injectPostfix/1]).
+-export([nop/0, nop/1, nameOf/1, send/2, say/2, say/1, pingNodes/1, nodez/0, injectPostfix/1, cookie/0, init/0, init/1]).
 
 nop(Name) -> io:format("~w waits for a wonder ... ~n", [Name]),
   receive
@@ -30,46 +30,69 @@ nameOf(Atom) -> global:whereis_name(Atom).
 send(To, Message) -> nameOf(To) ! Message, sent.
 
 say(Message, [Params]) -> io:format(Message ++ "~n", Params).
+say(Message) -> io:format(Message ++ "~n").
 
 % Returns all nodes available.
-nodes() -> injectPostfix(["customerNode", "cashierNode",
-  "assistantNode", "shelfNode", "issuingPointNode"]).
+nodez() -> injectPostfix(["customer", "cashier",
+  "assistant", "shelf", "issuingPoint"]).
+
+% Returns cookie value.
+cookie() -> newton22.
 
 injectPostfix([Head | Tail]) -> [Head ++ "@127.0.1.0"] ++ injectPostfix(Tail);
 injectPostfix([]) -> [].
 
 
-% Ping all nodes (except 'Except' )to make sending by its names possible
+init() -> case pingNodes(nodez())
+          of
+            {Pings, fail} -> say("Reached nodes: ~p", [[Pings]]),
+              timer:sleep(1000), % 1 second
+              init([Pings]);
+            {_, done} -> say("All nodes were reached"), done
+          end.
+
+init([Performed]) -> case pingNodes(Performed, nodez())
+                     of
+                       {Pings, fail} -> say("Reached nodes: ~p", [[Pings]]),
+                         timer:sleep(1000),
+                         init([Pings]);
+                       {_, done} -> say("All nodes were reached"), done
+                     end.
+
 % External
+pingNodes(List) -> pingNodes([], List).
+
+% Ping all nodes (except members of 'Except') to make sending by its names possible
 pingNodes(Except, [Head | Tail]) ->
-  if
-    Head == Except -> pingNodes(nothing, Tail);
-    true ->
+  case lists:member(Head, Except)
+  of
+    true -> pingNodes(Except, Tail);
+    false ->
       case net_adm:ping(list_to_atom(Head))
       of
-        pong -> pingNodes(Except, Tail, done);
+        pong -> pingNodes(Except ++ [Head], Tail, done);
         pang -> pingNodes(Except, Tail, fail)
       end
   end;
-pingNodes(_, []) -> fail.
+pingNodes(Except, []) -> {Except, fail}.
 
 pingNodes(Except, [Head | Tail], Result) ->
-  case Result
+  case lists:member(Head, Except)
   of
-    % do not continue pinging
-    fail -> fail;
-    % previous ping was successful
-    done -> if
-              Head == Except -> pingNodes(nothing, Tail);
-              true ->
-                case net_adm:ping(list_to_atom(Head))
-                of
-                  pong -> pingNodes(Except, Tail, done);
-                  pang -> pingNodes(Except, Tail, fail)
-                end
-            end
+    true -> pingNodes(Except, Tail, Result);
+    false ->
+      case net_adm:ping(list_to_atom(Head))
+      of
+        % pulls saved Result
+        pong -> pingNodes(Except ++ [Head], Tail, Result);
+        % no response means overriding previous successful pings
+        pang -> pingNodes(Except, Tail, fail)
+      end
   end;
 
-pingNodes(_, [], Result) -> Result.
+% Returns such values as
+%   {[<Except + Successful pinged nodes>], done.} - in case if all nodes were pinged.
+%   {[<Except + Successful pinged nodes>], fail.} - in case if not all of the nodes were pinged.
+pingNodes(Except, [], Result) -> {Except, Result}.
 
 

@@ -23,3 +23,6 @@ c(utils).
 пинг с другой ноды (чтобы узнать его имя)
     - net_adm:ping(<node_name>)
 
+ % sets cookie
+ 'newton22'
+spawn(fun() -> erlang:set_cookie(erlang:node(), cookie()), nop(name()) end),

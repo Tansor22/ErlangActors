@@ -18,8 +18,8 @@ name() -> shelf.
 shelf() -> nop(name()).
 
 main() -> Shelf_PID = spawn(fun() -> shelf() end),
-  global:register_name(name(), Shelf_PID).
-  % block current thread in order not to shutdown virtual machine
-  %receive
-   % _ -> exit(normal)
-  %end.
+  global:register_name(name(), Shelf_PID),
+% block current thread in order not to shutdown virtual machine
+  receive
+    _ -> exit(normal)
+  end.

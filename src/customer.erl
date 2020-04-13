@@ -12,10 +12,9 @@
 %% API
 -export([main/0, node/0]).
 
--import(utils, [nop/1, send/2, say/2]).
+-import(utils, [nop/1, send/2, say/2, cookie/0, init/0]).
 
 name() -> customer.
-node() -> "customerNode@127.0.1.0".
 
 % Books available.
 books() -> ["Sweeney Todd. Demon barber of Flit Street", "Groovy in Action",
@@ -24,7 +23,8 @@ books() -> ["Sweeney Todd. Demon barber of Flit Street", "Groovy in Action",
 % Picks a random book.
 wishForBook() -> lists:nth(rand:uniform(length(books())), books()).
 
-customer() -> DesiredBook = wishForBook(),
+
+customer() -> utils:init(), DesiredBook = wishForBook(),
   send(cashier, DesiredBook),
   say("I'd like a ~w book", [DesiredBook]),
   receive
@@ -35,8 +35,8 @@ customer() -> DesiredBook = wishForBook(),
   customer().
 
 main() -> Customer_PID = spawn(fun() -> customer() end),
-  global:register_name(name(), Customer_PID).
+  global:register_name(name(), Customer_PID),
 % block current thread in order not to shutdown virtual machine
-%receive
-% _ -> exit(normal)
-%end.
+receive
+ _ -> exit(normal)
+end.

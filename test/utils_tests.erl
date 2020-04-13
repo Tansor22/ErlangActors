@@ -16,4 +16,4 @@ inject_postfix_test() ->
   ?assertEqual(["test1@127.0.1.0", "test2@127.0.1.0"], injectPostfix(["test1", "test2"])).
 
 ping_nodes_test() ->
-  ?assertEqual(fail, pingNodes("toExcept", nodes())).
+  ?assertEqual({[], fail}, pingNodes(["toExcept"], nodes())).

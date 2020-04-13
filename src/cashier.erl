@@ -26,9 +26,9 @@ cashier() -> receive
 
 
 main() -> Cashier_PID = spawn(fun() -> cashier() end),
-  global:register_name(name(), Cashier_PID).
+  global:register_name(name(), Cashier_PID),
 % TODO not needed in console launch mode
 % block current thread in order not to shutdown virtual machine
-%receive
-%  _ -> exit(normal)
-%end.
+receive
+  _ -> exit(normal)
+end.
