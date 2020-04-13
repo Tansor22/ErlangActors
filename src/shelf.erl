@@ -12,14 +12,13 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2]).
+-import(utils, [nop/1, send/2, say/2, say/1]).
 
 name() -> shelf.
-shelf() -> nop(name()).
-
-main() -> Shelf_PID = spawn(fun() -> shelf() end),
-  global:register_name(name(), Shelf_PID),
-% block current thread in order not to shutdown virtual machine
+shelf() -> say("Waiting for an assistant's request..."),
   receive
-    _ -> exit(normal)
-  end.
+    Book -> utils:send(assistant, Book)
+  end, shelf().
+
+main() -> Shelf_PID = spawn(fun() -> utils:init(), shelf() end),
+  global:register_name(name(), Shelf_PID).

@@ -12,14 +12,19 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2]).
+-import(utils, [nop/1, send/2, say/2, say/1]).
 
 name() -> issuing_point.
-issuing_point() -> nop(name()).
-
-main() -> Issuing_point_PID = spawn(fun() -> issuing_point() end),
-  global:register_name(name(), Issuing_point_PID),
-  % block current thread in order not to shutdown virtual machine
+issuing_point() -> say("Waiting for an assistant's request..."),
   receive
-    _ -> exit(normal)
+    Book -> %say("An assistant gave us a ~s book.", [Book])
+      say("Packing the book..."),
+      utils:send(customer, Book),
+      receive
+        Money -> %say("We've earned ~d $!", [Money]),
+          utils:send(cashier, true)
+      end
   end.
+
+main() -> Issuing_point_PID = spawn(fun() -> utils:init(), issuing_point() end),
+  global:register_name(name(), Issuing_point_PID).

@@ -10,7 +10,7 @@
 -author("Sergei").
 
 %% API
--export([main/0, node/0]).
+-export([main/0]).
 
 -import(utils, [nop/1, send/2, say/2, cookie/0, init/0]).
 
@@ -24,19 +24,13 @@ books() -> ["Sweeney Todd. Demon barber of Flit Street", "Groovy in Action",
 wishForBook() -> lists:nth(rand:uniform(length(books())), books()).
 
 
-customer() -> utils:init(), DesiredBook = wishForBook(),
+customer() ->  DesiredBook = wishForBook(),
   send(cashier, DesiredBook),
-  say("I'd like a ~w book", [DesiredBook]),
+  %say("I'd like a ~s book", [DesiredBook]),
   receive
-    DesiredBook -> send(issuing_point, rand:uniform(10)),
-      say("I've got a  ~w book now!", [DesiredBook])
-  end,
-  % infinite loop
-  customer().
+    DesiredBook -> send(issuing_point, rand:uniform(10))
+      %say("I've got a ~s book now!", [DesiredBook])
+  end, customer().
 
-main() -> Customer_PID = spawn(fun() -> customer() end),
-  global:register_name(name(), Customer_PID),
-% block current thread in order not to shutdown virtual machine
-receive
- _ -> exit(normal)
-end.
+main() -> Customer_PID = spawn(fun() -> utils:init(), customer() end),
+  global:register_name(name(), Customer_PID).

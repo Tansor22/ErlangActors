@@ -12,23 +12,18 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2]).
+-import(utils, [nop/1, send/2, say/2, say/1]).
 
 name() -> cashier.
 
-cashier() -> receive
-               DesiredBook -> send(assistant, DesiredBook),
-                 receive
-                   true -> say("The ~w has been sold!", [DesiredBook])
-                 end
-             end,
-  cashier().
+cashier() -> say("Waiting for a customer's request..."),
+  receive
+    DesiredBook -> utils:send(assistant, DesiredBook),
+      receive
+        true -> done%say("The ~s has been sold!", [DesiredBook])
+      end
+  end, cashier().
 
 
-main() -> Cashier_PID = spawn(fun() -> cashier() end),
-  global:register_name(name(), Cashier_PID),
-% TODO not needed in console launch mode
-% block current thread in order not to shutdown virtual machine
-receive
-  _ -> exit(normal)
-end.
+main() -> Cashier_PID = spawn(fun() -> utils:init(), cashier() end),
+  global:register_name(name(), Cashier_PID).

@@ -32,9 +32,10 @@ send(To, Message) -> nameOf(To) ! Message, sent.
 say(Message, [Params]) -> io:format(Message ++ "~n", Params).
 say(Message) -> io:format(Message ++ "~n").
 
+
 % Returns all nodes available.
 nodez() -> injectPostfix(["customer", "cashier",
-  "assistant", "shelf", "issuingPoint"]).
+  "assistant", "shelf", "issuing_point"]).
 
 % Returns cookie value.
 cookie() -> newton22.

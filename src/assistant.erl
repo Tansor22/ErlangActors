@@ -12,14 +12,19 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2]).
+-import(utils, [nop/1, send/2, say/2, say/1]).
 
 name() -> assistant.
-assistant() -> nop(name()).
-
-main() -> Assistant_PID = spawn(fun() -> assistant() end),
-  global:register_name(name(), Assistant_PID),
-  % block current thread in order not to shutdown virtual machine
+assistant() -> say("Waiting for a cashier's request..."),
   receive
-    _ -> exit(normal)
-  end.
+    DesiredBook -> utils:send(shelf, DesiredBook),
+      receive
+        TheSameBook ->
+          % check condition
+          % looks like deadlock
+          utils:send(issuing_point, TheSameBook)
+      end
+  end, assistant().
+
+main() -> Assistant_PID = spawn(fun() -> utils:init(), assistant() end),
+  global:register_name(name(), Assistant_PID).
