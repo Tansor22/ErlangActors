@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Sergei
-%%% @copyright (C) 2020, <COMPANY>
+%%% @copyright (C) 2020, SIB IT
 %%% @doc
 %%%
 %%% @end
@@ -12,19 +12,20 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2, say/1]).
+-import(utils, [nop/1, send/2, say/2, sayEx/1, say/1, rand/2]).
 
 name() -> issuing_point.
 issuing_point() -> say("Waiting for an assistant's request..."),
   receive
-    Book -> %say("An assistant gave us a ~s book.", [Book])
+    Book -> sayEx(["An assistant gave us a", Book, "book."]),
       say("Packing the book..."),
       utils:send(customer, Book),
       receive
-        Money -> %say("We've earned ~d $!", [Money]),
+        Money -> sayEx(["We've earned", integer_to_list(Money), "$!" ]),
           utils:send(cashier, true)
-      end
+      end,
+      timer:sleep(rand(500, 1500)), issuing_point()
   end.
 
 main() -> Issuing_point_PID = spawn(fun() -> utils:init(), issuing_point() end),
-  global:register_name(name(), Issuing_point_PID).
+  global:register_name(name(), Issuing_point_PID), nop(self()).

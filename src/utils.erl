@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Sergei
-%%% @copyright (C) 2020, <SIB IT>
+%%% @copyright (C) 2020, SIB IT
 %%% @doc
 %%%
 %%% @end
@@ -10,7 +10,8 @@
 -author("Sergei").
 
 %% API
--export([nop/0, nop/1, nameOf/1, send/2, say/2, say/1, pingNodes/1, nodez/0, injectPostfix/1, cookie/0, init/0, init/1]).
+-export([nop/0, nop/1, nameOf/1, send/2, say/2, quoted/1, say/1, sayEx/1,
+  pingNodes/1, nodez/0, injectPostfix/1, cookie/0, init/0, init/1, rand/1, rand/2]).
 
 nop(Name) -> io:format("~w waits for a wonder ... ~n", [Name]),
   receive
@@ -31,8 +32,9 @@ send(To, Message) -> nameOf(To) ! Message, sent.
 
 say(Message, [Params]) -> io:format(Message ++ "~n", Params).
 say(Message) -> io:format(Message ++ "~n").
+sayEx(Strings) -> io:format(string:join(Strings, " ") ++ "~n").
 
-
+quoted(String) -> "'" ++ String ++ "'".
 % Returns all nodes available.
 nodez() -> injectPostfix(["customer", "cashier",
   "assistant", "shelf", "issuing_point"]).
@@ -43,6 +45,8 @@ cookie() -> newton22.
 injectPostfix([Head | Tail]) -> [Head ++ "@127.0.1.0"] ++ injectPostfix(Tail);
 injectPostfix([]) -> [].
 
+rand(Ceil) -> floor(rand:uniform() * Ceil).
+rand(From, To) -> floor(From + rand:uniform() * (To - From)).
 
 init() -> case pingNodes(nodez())
           of

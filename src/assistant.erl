@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Sergei
-%%% @copyright (C) 2020, <COMPANY>
+%%% @copyright (C) 2020, SIB IT
 %%% @doc
 %%%
 %%% @end
@@ -12,19 +12,19 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2, say/1]).
+-import(utils, [nop/1, send/2, say/2, say/1, sayEx/1, quoted/1, rand/2]).
 
 name() -> assistant.
 assistant() -> say("Waiting for a cashier's request..."),
   receive
-    DesiredBook -> utils:send(shelf, DesiredBook),
+    Book -> sayEx(["The cashier has requested a", quoted(Book), "!"]),
+      utils:send(shelf, Book),
       receive
-        TheSameBook ->
+        Book ->
           % check condition
-          % looks like deadlock
-          utils:send(issuing_point, TheSameBook)
+          utils:send(issuing_point, Book)
       end
-  end, assistant().
+  end, timer:sleep(rand(500, 1500)), assistant().
 
 main() -> Assistant_PID = spawn(fun() -> utils:init(), assistant() end),
-  global:register_name(name(), Assistant_PID).
+  global:register_name(name(), Assistant_PID), nop(self()).

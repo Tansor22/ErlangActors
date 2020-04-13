@@ -26,3 +26,6 @@ c(utils).
  % sets cookie
  'newton22'
 spawn(fun() -> erlang:set_cookie(erlang:node(), cookie()), nop(name()) end),
+
+erl flag
+-setcookie newton22

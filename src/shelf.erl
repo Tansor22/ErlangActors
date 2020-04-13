@@ -1,6 +1,6 @@
 %%%-------------------------------------------------------------------
 %%% @author Sergei
-%%% @copyright (C) 2020, <COMPANY>
+%%% @copyright (C) 2020, SIB IT
 %%% @doc
 %%%
 %%% @end
@@ -12,13 +12,13 @@
 %% API
 -export([main/0]).
 
--import(utils, [nop/1, send/2, say/2, say/1]).
+-import(utils, [nop/1, send/2, say/2, say/1, sayEx/1, quoted/1, rand/2]).
 
 name() -> shelf.
 shelf() -> say("Waiting for an assistant's request..."),
   receive
-    Book -> utils:send(assistant, Book)
-  end, shelf().
+    Book -> sayEx(["The assistant has requested a", quoted(Book), "!"]), utils:send(assistant, Book)
+  end, timer:sleep(rand(500, 1500)), shelf().
 
 main() -> Shelf_PID = spawn(fun() -> utils:init(), shelf() end),
-  global:register_name(name(), Shelf_PID).
+  global:register_name(name(), Shelf_PID), nop(self()).
